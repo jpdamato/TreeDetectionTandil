@@ -20,11 +20,9 @@ class Object:
 
 
 ######################################################
-class YOLOSegmentation:
+class YOLODetector:
     
-    classes_name = [ 'Bed', 'Bed Handles', 'Chair', 'Display', 
-    'Faucet', 'Furniture-Cupboard', 'Handles', 'Keypad', 'Light', 'Light Table', 'Mobile Table', 'Mobile Table Tray', 'Mop', 'Oxygen', 'Phone', 'Pillow', 'Remote control', 'Serum Holder', 'Wall drawer unit' ]
-
+   
     def __init__(self, model_path):
         self.model = YOLO(model_path)
         self.bboxes = None 

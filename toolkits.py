@@ -1,5 +1,79 @@
 import cv2
 import rasterio
+import rasterio
+import json
+import affine
+import numpy as np
+
+
+def segmentateUsingYolo(image):
+
+    # Segmentation detector
+    #ys = YOLOSegmentation("D:/Resources/models/yolov8/yolov8n.pt")
+    #videoCap =cv2.VideoCapture( "d:/Resources/Novathena/vlc-record-2023-04-20_v1.mp4")
+
+    ys = YOLOSegmentation("/models/yolov8_trees_17nov2023.pt")
+
+    frame = cv2.imread("e:/Resources/Municipio/drone/zona 2/odm_orthophoto/odm_orthophoto.tif")
+
+
+    if (frame is None):
+        exit()
+        
+    height = frame.shape[0]
+    width = frame.shape[1]
+
+    xOffset = 500
+    #overlap = 100
+
+    yres = []
+    # detect all
+    while xOffset < width - 600:
+
+        yOffset = 500
+
+        while yOffset < height - 600:
+
+            roi = frame[yOffset:yOffset + 600, xOffset:xOffset + 600]
+            
+            renderF= roi.copy()
+
+            if roi is None:
+                break
+
+            ys.detect(roi)
+
+            if len(ys.objects)>0:
+                ys.drawOwnDetections(renderF)
+
+                for o in ys.objects:
+                    if o.className == "broccoli" or o.className == "potted plant":
+                        o.bbox[0] = o.bbox[0] + xOffset
+                        o.bbox[1] = o.bbox[1] + yOffset
+                        o.bbox[2] = o.bbox[2] + xOffset
+                        o.bbox[3] = o.bbox[3] + yOffset 
+                        yres.append(o)
+    
+                cv2.imshow("frame", renderF)
+
+                renderAllDetections(frame, yres, 10)
+                cv2.waitKey(1)
+
+            yOffset += 500
+
+            if len(yres) > 120:
+                break
+
+        xOffset += 500
+
+        if len(yres) > 120:
+                break
+
+
+    m = renderAllDetections(frame, yres, 1)
+
+    cv2.imwrite("../out_detected.jpg", m)
+
 
 class ImageForClipModel:
     """Class for clipping big raster images into smaller parts. Class initialized with image address.
