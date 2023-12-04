@@ -97,6 +97,8 @@ class ImageForClipModel:
             self.band = f.read(1)
             self.crs = f.crs
             self.base_transform = f.transform
+            self.bounds = f.bounds
+       
         self.band_shape = self.band.shape
         self.band_dtype = self.band.dtype
         self.clipped_images = []
@@ -104,9 +106,14 @@ class ImageForClipModel:
         self.image_data = []
 
     # Function for clipping band
-    def clip_raster(self, height, width, buffer=0, save_mode=False,
+    def clip_raster(self, height, width, buffer=0, save_mode=False, demImageURL=None,
                     prefix='clipped_band_', pass_empty=False):
-       
+
+        if demImageURL is not None:
+            self.dem = cv2.imread(demImageURL)
+            self.dem = cv2.resize(self.dem, self.bands.size, interpolation=cv2.INTER_AREA)
+
+
         row_position = 0
         while row_position < self.band_shape[0]:
             col_position = 0
@@ -130,7 +137,8 @@ class ImageForClipModel:
                 lons= np.array(xs)
                 lats = np.array(ys)
                 
-                image = {'crop':cropped_image, 'crs':self.crs, 'transform':new_transform,
+                image = {'crop': cropped_image, 'crs': self.crs, 'transform': new_transform,
+                         'row_offset' : row_position, 'col_offset' : col_position,
                          'width':cropped_image.shape[0], 'height':cropped_image.shape[1],
                          'band':self.band_dtype , 'long':lons[0], 'lat':lats[0]}
 
@@ -138,10 +146,10 @@ class ImageForClipModel:
                 # Save or append into a set
                 if save_mode:
                     filename = prefix + 'x_' + str(col_position) + '_y_' + str(row_position) + '.tif'
-                    with rio.open(filename, 'w', driver='GTiff', height=image[3],
-                                  width=image[4], count=1, dtype=image[5],
-                                  crs=image[1], transform=image[2]) as dst:
-                        dst.write(image[0], 1)
+                    with rasterio.open(filename, 'w', driver='GTiff', height=cropped_image.shape[1],
+                                  width=cropped_image.shape[0], count=4, dtype=self.band_dtype,
+                                  crs=self.crs, transform=new_transform) as dst:
+                        dst.write(cropped_image, 1)
                     self.clipped_addresses.append(filename)
                 else:
                     self.clipped_images.append(cropped_image)

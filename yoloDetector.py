@@ -7,15 +7,17 @@ import time
 
 ##############################################
 ## class for describing detected object
-class Object:
-  def __init__(self,frame, bbox = None, classID = 0, className = "",segmentation = None, score = 0):
+class DetectedObject:
+  def __init__(self,frame = None, bbox = None, classID = 0, className = "",segmentation = None, score = 0):
         self.bbox = bbox
         self.class_id  = classID
         self.className = className
         self.score = score
         self.segmentation = segmentation
-        self.center = (int(self.bbox[0]*0.5+self.bbox[2]*0.5),int(self.bbox[1]*0.5+self.bbox[3]*0.5))
-        if self.bbox is not None:          
+        self.geoBBox = None
+        if bbox is not None:
+            self.center = (int(self.bbox[0]*0.5+self.bbox[2]*0.5),int(self.bbox[1]*0.5+self.bbox[3]*0.5))
+        if self.bbox is not None and frame is not None:          
           self.crop = frame[self.bbox[1]:self.bbox[3], self.bbox[0]:self.bbox[2]]
 
 
@@ -88,10 +90,10 @@ class YOLODetector:
         self.objects = []
         if len(segmentation_contours_idx) == 0 :
             for bbox, class_id,  score in zip(bboxes, class_ids,  scores):
-                self.objects.append(Object(img,bbox, class_id,self.names[class_id], None, score))
+                self.objects.append(DetectedObject(img,bbox, class_id,self.names[class_id], None, score))
         else:
             for bbox, class_id, seg, score in zip(bboxes, class_ids, segmentation_contours_idx, scores):
-                self.objects.append(Object(img,bbox, class_id,self.names[class_id], seg, score))
+                self.objects.append(DetectedObject(img,bbox, class_id,self.names[class_id], seg, score))
         
         return self.objects
     
