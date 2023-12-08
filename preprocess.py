@@ -13,20 +13,6 @@ import rasterio
 
 geo_transform = None
 
-    
-def exportDetections(path_out, detections, outputCrs = "urn:ogc:def:crs:OGC:1.3:CRS84"  ):
-    header = {}
-    header["type"] = "FeatureCollection"
-    header["name"]: "drone_explore_area"
-    header["crs"] = {"type": "name", "properties": {"name":outputCrs }}
-    header["features"] = detections
-
-    # Serializing json
-    json_serialized = json.dumps(header, indent=4)
-
-    # Writing to sample.json
-    with open(path_out +"detections.json", "w") as outfile:
-        outfile.write(json_serialized)
 ########################################################
 def getLatLongBoundingBox(bbox, src_data):
     base_transform = src_data['transform']
@@ -95,7 +81,7 @@ def polygonsToRaster(streets, saveIntermediate, path):
     # Using GeoCube to rasterize the Vector
     rastered = make_geocube(
         vector_data=streets,
-        resolution=(-0.00001, 0.00001),       
+        resolution=(-1.0, 1.0),       
         fill=0,
         rasterize_function=partial(rasterize_image, all_touched=True),
     )
@@ -146,7 +132,7 @@ def generateStreetMask(src_image, saveIntermediate, path):
 
     # Display the result or save it
     cv2.imshow('Gray Pixels Only', renderFrame)
-    cv2.waitKey(0)
+    cv2.waitKey(500)
 
     out_meta.update({"driver": "GTiff",
             "height": result_image.shape[1],
@@ -156,6 +142,5 @@ def generateStreetMask(src_image, saveIntermediate, path):
             "transform": out_transform})
 
     if saveIntermediate:       
-
-        with rasterio.open(path + "/streets_detected.tiff", 'w', **out_meta) as dst:
-            dst.write(result_image , 1)
+        cv2.imwrite(path + "/streets_detected.png", result_image)
+       

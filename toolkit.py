@@ -6,6 +6,22 @@ import affine
 import numpy as np
 
 
+    
+def exportDetections(path_out, detections, outputCrs="urn:ogc:def:crs:OGC:1.3:CRS84",
+                    ouputFileName = "detections.json"  ):
+    header = {}
+    header["type"] = "FeatureCollection"
+    header["name"]: "drone_explore_area"
+    header["crs"] = {"type": "name", "properties": {"name":outputCrs }}
+    header["features"] = detections
+
+    # Serializing json
+    json_serialized = json.dumps(header, indent=4)
+
+    # Writing to sample.json
+    with open(path_out +ouputFileName, "w") as outfile:
+        outfile.write(json_serialized)
+
 def segmentateUsingYolo(image):
 
     # Segmentation detector
@@ -111,7 +127,8 @@ class ImageForClipModel:
 
         if demImageURL is not None:
             self.dem = cv2.imread(demImageURL)
-            self.dem = cv2.resize(self.dem, self.bands.size, interpolation=cv2.INTER_AREA)
+            if self.dem is not None:
+                self.dem = cv2.resize(self.dem, self.band_shape, interpolation=cv2.INTER_AREA)
 
 
         row_position = 0
