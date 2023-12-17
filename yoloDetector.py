@@ -6,48 +6,6 @@ import threading
 import time
 
 
-def calcul_area(box):
-    x1, y1, x2, y2 = box
-    return abs(x1 - x2) * abs(y1 - y2)
-
-def nms_area(box_lhs, boxes, thresh_iou: float) -> float:
-    
-    max_iou = 0.0
-
-    for box_rhs in boxes:
-    
-        x1_lhs, y1_lhs, x2_lhs, y2_lhs = box_lhs
-        x1_rhs, y1_rhs, x2_rhs, y2_rhs = box_rhs
-
-        area_lhs = calcul_area(box_lhs)
-        area_rhs = calcul_area(box_rhs)
-
-        # Determines the coordinates of the intersection box
-        x1_inter = max(x1_lhs, x1_rhs)
-        y1_inter = max(y1_lhs, y1_rhs)
-        x2_inter = min(x2_lhs, x2_rhs)
-        y2_inter = min(y2_lhs, y2_rhs)
-
-        # Determines if the boxes overlap or not
-        # If one of the two is equal to 0, the boxes do not overlap
-        inter_w = max(0.0, x2_inter - x1_inter)
-        inter_h = max(0.0, y2_inter - y1_inter)
-
-        if inter_w == 0.0 or inter_h == 0.0:
-            continue
-
-        intersection_area = inter_w * inter_h
-        union_area = area_lhs + area_rhs - intersection_area
-
-        # See if the smallest box is not mostly in the largest one
-        if intersection_area / area_rhs >= thresh_iou:
-            iou = area_rhs / intersection_area
-        else:
-            iou = intersection_area / union_area
-
-        max_iou = max(iou, max_iou)
-
-    return max_iou
 
 ##############################################
 ## class for describing detected object

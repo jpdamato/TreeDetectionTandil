@@ -13,6 +13,29 @@ import rasterio
 
 geo_transform = None
 
+def getGreenBand(src_img_path, output_path):
+    img = cv2.imread(src_img_path)
+   ## Convert to HSV
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    ## Mask of green (36,25,25) ~ (86, 255,255)
+    # mask = cv2.inRange(hsv, (36, 25, 25), (86, 255,255))
+    mask = cv2.inRange(hsv, (36, 100, 50), (70, 255, 255))
+
+    # Apply erosion filter
+    kernel = np.ones((5, 5), np.uint8)  # Adjust the kernel size as needed
+   # eroded_mask = cv2.erode(mask, kernel, iterations=1)
+
+    # Apply dilation filter
+    dilated_mask = cv2.dilate(mask, kernel, iterations=1)
+
+    # Apply the mask to the original image
+    result_image = cv2.bitwise_and(img, img, mask=dilated_mask)
+
+    cv2.imwrite(output_path, result_image)
+
+
+
 ########################################################
 def getLatLongBoundingBox(bbox, src_data):
     base_transform = src_data['transform']

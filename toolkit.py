@@ -5,7 +5,15 @@ import json
 import affine
 import numpy as np
 
+def readDetections(src_file):
+    # Opening JSON file
+    f = open(src_file)
+ 
+    # returns JSON object as 
+    # a dictionary
+    data = json.load(f)
 
+    return data
     
 def exportDetections(path_out, detections, outputCrs="urn:ogc:def:crs:OGC:1.3:CRS84",
                     ouputFileName = "detections.json"  ):
